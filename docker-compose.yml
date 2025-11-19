@@ -1,0 +1,59 @@
+services:
+  mongo:
+    image: mongo:4.4
+    restart: always
+    volumes:
+      - mongo_data:/data/db
+    command: --wiredTigerCacheSizeGB 0.5
+
+  redis:
+    image: redis:6.0
+    restart: always
+
+  cwmp:
+    image: genieacs/genieacs:1.2.13
+    restart: always
+    command: genieacs-cwmp
+    environment: &genieacs_env
+      GENIEACS_MONGODB_CONNECTION_URL: mongodb://mongo/genieacs
+      GENIEACS_REDIS_PORT: 6379
+      GENIEACS_REDIS_HOST: redis
+      GENIEACS_UI_JWT_SECRET: FiberNetSecretKey2025
+      GENIEACS_CWMP_ACCESS_LOG_FILE: /dev/stdout
+      GENIEACS_NBI_ACCESS_LOG_FILE: /dev/stdout
+      GENIEACS_UI_ACCESS_LOG_FILE: /dev/stdout
+      GENIEACS_DEBUG_FILE: /dev/stdout
+      GENIEACS_EXT_DIR: /opt/genieacs/ext
+    depends_on:
+      - mongo
+      - redis
+
+  nbi:
+    image: genieacs/genieacs:1.2.13
+    restart: always
+    command: genieacs-nbi
+    environment: *genieacs_env
+    depends_on:
+      - mongo
+      - redis
+
+  fs:
+    image: genieacs/genieacs:1.2.13
+    restart: always
+    command: genieacs-fs
+    environment: *genieacs_env
+    depends_on:
+      - mongo
+      - redis
+
+  ui:
+    image: genieacs/genieacs:1.2.13
+    restart: always
+    command: genieacs-ui
+    environment: *genieacs_env
+    depends_on:
+      - mongo
+      - redis
+
+volumes:
+  mongo_data:
