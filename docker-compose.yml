@@ -1,17 +1,6 @@
 services:
-  mongo:
-    image: mongo:4.4
-    restart: always
-    volumes:
-      - mongo_data:/data/db
-    command: --wiredTigerCacheSizeGB 0.5
-
-  redis:
-    image: redis:6.0
-    restart: always
-
   cwmp:
-    image: genieacs/genieacs:1.2.13
+    build: .  # <--- A MÁGICA ESTÁ AQUI: Constrói localmente
     restart: always
     command: genieacs-cwmp
     environment: &genieacs_env
@@ -24,36 +13,24 @@ services:
       GENIEACS_UI_ACCESS_LOG_FILE: /dev/stdout
       GENIEACS_DEBUG_FILE: /dev/stdout
       GENIEACS_EXT_DIR: /opt/genieacs/ext
-    depends_on:
+    external_links:
       - mongo
       - redis
 
   nbi:
-    image: genieacs/genieacs:1.2.13
+    build: .
     restart: always
     command: genieacs-nbi
     environment: *genieacs_env
-    depends_on:
-      - mongo
-      - redis
 
   fs:
-    image: genieacs/genieacs:1.2.13
+    build: .
     restart: always
     command: genieacs-fs
     environment: *genieacs_env
-    depends_on:
-      - mongo
-      - redis
 
   ui:
-    image: genieacs/genieacs:1.2.13
+    build: .
     restart: always
     command: genieacs-ui
     environment: *genieacs_env
-    depends_on:
-      - mongo
-      - redis
-
-volumes:
-  mongo_data:
